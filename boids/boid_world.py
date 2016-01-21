@@ -1,5 +1,7 @@
 import random
 
+from math import sqrt
+
 from boids.boid import Boid
 
 
@@ -8,6 +10,7 @@ class BoidWorld:
         self.x_size, self.y_size = size
         self.size = size
         self.boids = []
+        self.radius = 50
 
     def add_boid(self):
         x, y = random.randrange(0, self.x_size), random.randrange(0, self.y_size)
@@ -26,4 +29,22 @@ class BoidWorld:
 
     def get_neighbours(self, boid):
         # Must return only within a certain radius
-        return self.boids
+        bs = []
+
+        for b in self.boids:
+            if b == boid:
+                continue
+            if self.within_radius(boid.position, b.position, self.radius):
+                bs.append(b)
+
+        return bs
+
+    @staticmethod
+    def within_radius(a, b, r):
+        ax, ay = a
+        bx, by = b
+
+        if sqrt((bx-ax)**2+(by-ay)**2) < r:
+            return True
+
+        return False
