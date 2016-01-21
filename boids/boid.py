@@ -21,6 +21,10 @@ class Boid:
 
     def align(self, neighbours):
         # Still needs some "latency"
+
+        if not neighbours:
+            return
+
         s = 0
         for n in neighbours:
             s += n.angle
