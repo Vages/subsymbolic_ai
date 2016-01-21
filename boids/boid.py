@@ -1,5 +1,6 @@
 import random
-from math import sin, cos, radians
+from math import sin, cos, pi, atan2
+from random import random
 
 
 class Boid:
@@ -8,7 +9,7 @@ class Boid:
     def __init__(self, pos, vel, world):
         self.position = pos
         self.velocity = vel
-        self.angle = radians(random.randrange(0, 360))
+        self.angle = random()*2*pi
         self.world = world
         self.id = Boid.id_counter
         Boid.id_counter += 1
@@ -32,15 +33,31 @@ class Boid:
         self.move()
 
     def align(self, neighbours):
-        # Still needs some "latency"
-
         if not neighbours:
             return
 
-        s = 0
+        sin_sum = 0
+        cos_sum = 0
+
         for n in neighbours:
-            s += n.angle
+            sin_sum += sin(n.angle)
+            cos_sum += cos(n.angle)
 
-        avg = s/len(neighbours)
+        avg_angle = atan2(sin_sum, cos_sum) % pi  # Average of neighbours
 
-        self.angle = avg
+        diff = avg_angle-self.angle
+
+        if 0 < abs(diff) <= pi:
+            self.angle += diff*self.world.alignment_weight
+            self.angle %= 2*pi
+
+        elif diff < 0:
+            diff += 2*pi
+            self.angle += diff*self.world.alignment_weight
+            self.angle %= 2*pi
+
+        else:
+            diff -= 2*pi
+            self.angle += diff*self.world.alignment_weight
+            self.angle %= 2*pi
+

@@ -1,6 +1,6 @@
 import random
 
-from math import sqrt
+from math import sqrt, hypot
 
 from boids.boid import Boid
 
@@ -16,6 +16,7 @@ class BoidWorld:
         self.size = size
         self.boids = []
         self.flock_radius = 50
+        self.alignment_weight = 0.1
 
     def add_boid(self):
         x, y = random.randrange(0, self.x_size), random.randrange(0, self.y_size)
@@ -54,7 +55,7 @@ class BoidWorld:
         ax, ay = a
         bx, by = b
 
-        if sqrt((bx-ax)**2+(by-ay)**2) < r:
+        if hypot((bx-ax), (by-ay)) < r:
             return True
 
         return False
