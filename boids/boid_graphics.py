@@ -17,13 +17,17 @@ class BoidGraphics:
 
         self.screen.fill((0, 0, 0))
 
+        self.world.update()
+
         for boid in self.world.boids:
             self.draw_boid(boid)
 
         pygame.display.flip()
 
     def draw_boid(self, boid):
-        pygame.draw.circle(self.screen, (255, 255, 255), boid.position, 10)
+        x, y = boid.position
+        x, y = round(x), round(y)
+        pygame.draw.circle(self.screen, (255, 255, 255), (x, y), 10)
 
 if __name__ == "__main__":
     pygame.init()

@@ -11,8 +11,15 @@ class BoidWorld:
 
     def add_boid(self):
         x, y = random.randrange(0, self.x_size), random.randrange(0, self.y_size)
-        b = Boid((x, y), 0)
+        b = Boid((x, y), 10)
         self.boids.append(b)
 
     def remove_boid(self):
-        self.boids.pop(0)
+        if self.boids:
+            self.boids.pop(0)
+
+    def update(self):
+        for boid in self.boids:
+            boid.update()
+            x, y = boid.position
+            boid.position = x%self.x_size, y%self.y_size
