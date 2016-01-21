@@ -1,3 +1,3 @@
 class BoidWorld:
-    def init(self, size):
+    def __init__(self, size):
         self.size = size
