@@ -6,11 +6,16 @@ from boids.boid import Boid
 
 
 class BoidWorld:
+    CONSTANTS = ((0, 0),
+                 (-1, 0), (1, 0),
+                 (0, 1), (0, -1),
+                 (-1, -1), (-1, 1), (1, 1), (1, -1))
+
     def __init__(self, size):
         self.x_size, self.y_size = size
         self.size = size
         self.boids = []
-        self.radius = 50
+        self.flock_radius = 50
 
     def add_boid(self):
         x, y = random.randrange(0, self.x_size), random.randrange(0, self.y_size)
@@ -25,17 +30,22 @@ class BoidWorld:
         for boid in self.boids:
             boid.update()
             x, y = boid.position
-            boid.position = x%self.x_size, y%self.y_size
+            boid.position = x % self.x_size, y % self.y_size
 
     def get_neighbours(self, boid):
-        # Must return only within a certain radius
         bs = []
 
         for b in self.boids:
             if b == boid:
                 continue
-            if self.within_radius(boid.position, b.position, self.radius):
-                bs.append(b)
+
+            for wx, wy in self.CONSTANTS:
+                bx, by = b.position
+                dx, dy = wx*self.x_size, wy*self.y_size
+
+                if self.within_radius(boid.position, (bx+dx, by+dy), self.flock_radius):
+                    bs.append(b)
+                    break
 
         return bs
 
