@@ -13,3 +13,6 @@ class BoidWorld:
         x, y = random.randrange(0, self.x_size), random.randrange(0, self.y_size)
         b = Boid((x, y), 0)
         self.boids.append(b)
+
+    def remove_boid(self):
+        self.boids.pop(0)

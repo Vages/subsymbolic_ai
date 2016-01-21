@@ -36,5 +36,7 @@ if __name__ == "__main__":
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_PLUS:
                     bw.add_boid()
+                if event.key == pygame.K_MINUS:
+                    bw.remove_boid()
 
         bg.draw()
