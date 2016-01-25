@@ -22,6 +22,15 @@ class Boid:
     def __hash__(self):
         return hash(self.id)
 
+    def __repr__(self):
+        return "boid " + str(self.id) + " @ " + str(self.position)
+
+    def get_x(self):
+        return self.position[0]
+
+    def get_y(self):
+        return self.position[1]
+
     def move(self):
         dx, dy = self.velocity*cos(self.angle), self.velocity*sin(self.angle)
         x, y = self.position
