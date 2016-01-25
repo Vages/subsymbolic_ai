@@ -1,3 +1,4 @@
+import numpy
 import pygame
 import sys
 
@@ -28,19 +29,17 @@ class BoidGraphics:
         pygame.display.flip()
 
     def draw_boid(self, boid):
-        x, y = boid.position
-        x, y = round(x), round(y)
-        pygame.draw.circle(self.screen, (255, 255, 255), (x, y), self.BOID_RADIUS)
-        v_x, v_y = boid.velocity
-        v_x, v_y = boid.normalize(v_x, v_y, self.BOID_RADIUS)
-        pygame.draw.line(self.screen, (0, 0, 0), (x, y), (x+v_x, y+v_y), 3)
+        integer_position = numpy.around(boid.position, 0).astype(int)
+        pygame.draw.circle(self.screen, (255, 255, 255), integer_position, self.BOID_RADIUS)
+        integer_speed = boid.normalize(boid.velocity, self.BOID_RADIUS).astype(int)
+        pygame.draw.line(self.screen, (0, 0, 0), integer_position, integer_position+integer_speed, 3)
 
 
 if __name__ == "__main__":
     pygame.init()
     bw = BoidWorld((1280, 720))
     bg = BoidGraphics(bw, 30)
-    for i in range(100):
+    for i in range(200):
         bw.add_boid()
     while True:
         for event in pygame.event.get():

@@ -24,7 +24,7 @@ class BoidWorld:
 
     def add_boid(self):
         x, y = random.randrange(0, self.x_size), random.randrange(0, self.y_size)
-        b = Boid((x, y), 10, self)
+        b = Boid((x, y), 3, self)
         self.boids.append(b)
 
     def remove_boid(self):
