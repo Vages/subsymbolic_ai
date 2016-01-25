@@ -6,17 +6,19 @@ from boids.boid import Boid
 
 
 class BoidWorld:
-    CONSTANTS = ((0, 0),
+    CONSTANTS = ((0, 0),)
+    """
                  (-1, 0), (1, 0),
                  (0, 1), (0, -1),
                  (-1, -1), (-1, 1), (1, 1), (1, -1))
+    """
 
     def __init__(self, size):
         self.x_size, self.y_size = size
         self.size = size
         self.boids = []
         self.flock_radius = 50
-        self.alignment_weight = 0.1
+        self.alignment_weight = 1
 
     def add_boid(self):
         x, y = random.randrange(0, self.x_size), random.randrange(0, self.y_size)
