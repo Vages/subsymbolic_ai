@@ -1,5 +1,5 @@
 import random
-from math import sin, cos, pi, atan2
+from math import sin, cos, pi, atan2, hypot
 from random import random
 
 
@@ -8,8 +8,8 @@ class Boid:
 
     def __init__(self, pos, vel, world):
         self.position = pos
-        self.velocity = vel
         self.angle = random()*2*pi
+        self.velocity = (vel*cos(self.angle), vel*sin(self.angle))
         self.world = world
         self.id = Boid.id_counter
         Boid.id_counter += 1
@@ -31,19 +31,19 @@ class Boid:
     def get_y(self):
         return self.position[1]
 
-    def move(self):
-        dx, dy = self.velocity*cos(self.angle), self.velocity*sin(self.angle)
-        x, y = self.position
-        self.position = x+dx, y+dy
-
     def update(self):
         neighbours = self.world.get_neighbours(self)
-        self.align(neighbours)
+
+        align = self.calculate_alignment_force(neighbours)
+
+        self.velocity = [sum(x) for x in zip(self.velocity, align)]
+        self.angle = atan2(self.velocity[1], self.velocity[0]) # adjust angle
+
         self.move()
 
-    def align(self, neighbours):
+    def calculate_alignment_force(self, neighbours):
         if not neighbours:
-            return
+            return 0, 0
 
         sin_sum = 0
         cos_sum = 0
@@ -52,21 +52,13 @@ class Boid:
             sin_sum += sin(n.angle)
             cos_sum += cos(n.angle)
 
-        avg_angle = atan2(sin_sum, cos_sum) % pi  # Average of neighbours
+        h = hypot(sin_sum, cos_sum)
+        cur_cos, cur_sin = cos(self.angle), sin(self.angle)
 
-        diff = avg_angle-self.angle
+        diff_x, diff_y = cos_sum/h-cur_cos, sin_sum/h-cur_sin
 
-        if 0 < abs(diff) <= pi:
-            self.angle += diff*self.world.alignment_weight
-            self.angle %= 2*pi
+        return self.world.alignment_weight*diff_x, self.world.alignment_weight*diff_y
 
-        elif diff < 0:
-            diff += 2*pi
-            self.angle += diff*self.world.alignment_weight
-            self.angle %= 2*pi
-
-        else:
-            diff -= 2*pi
-            self.angle += diff*self.world.alignment_weight
-            self.angle %= 2*pi
+    def move(self):
+        self.position = [sum(x) for x in zip(self.position, self.velocity)]
 
