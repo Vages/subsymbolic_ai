@@ -8,6 +8,7 @@ from boids.boid_world import BoidWorld
 
 class BoidGraphics:
     BOID_RADIUS = 10
+
     def __init__(self, world, fps):
         self.world = world
         self.screen = pygame.display.set_mode(self.world.size)
@@ -30,17 +31,16 @@ class BoidGraphics:
         x, y = boid.position
         x, y = round(x), round(y)
         pygame.draw.circle(self.screen, (255, 255, 255), (x, y), self.BOID_RADIUS)
-        ang = boid.angle
-        ang_cos = cos(ang)
-        ang_sin = sin(ang)
-        pygame.draw.line(self.screen, (0, 0, 0), (x, y), (x+ang_cos*self.BOID_RADIUS, y + ang_sin*self.BOID_RADIUS), 3)
+        v_x, v_y = boid.velocity
+        v_x, v_y = boid.normalize(v_x, v_y, self.BOID_RADIUS)
+        pygame.draw.line(self.screen, (0, 0, 0), (x, y), (x+v_x, y+v_y), 3)
 
 
 if __name__ == "__main__":
     pygame.init()
     bw = BoidWorld((1280, 720))
     bg = BoidGraphics(bw, 30)
-    for i in range(20):
+    for i in range(100):
         bw.add_boid()
     while True:
         for event in pygame.event.get():
