@@ -31,4 +31,7 @@ classifier.fit(X_train, y_train)
 predictions = classifier.predict(X_test)
 print(classification_report(y_test, predictions))
 
-pickle.dump(classifier, "classifier.pickle")
+pickle.dump(classifier, open("classifier.pickle", "wb"))
+pickle.dump
+
+
