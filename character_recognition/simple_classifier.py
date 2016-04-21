@@ -24,7 +24,7 @@ for path, subdirs, files in os.walk('chars74k-lite'):
 X = np.array(X)
 X = X.reshape(X.shape[:2])
 
-classifier = SVC(verbose=0, kernel='poly', degree=2)
+classifier = SVC(verbose=1, kernel='poly', degree=2, C=4)
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 classifier.fit(X_train, y_train)
 predictions = classifier.predict(X_test)
