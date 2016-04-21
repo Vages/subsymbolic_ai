@@ -4,6 +4,7 @@ from sklearn.preprocessing import scale
 import pickle
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.cm as cm
 
 
 def resize_quadratic_image(image):
@@ -79,8 +80,9 @@ if __name__ == "__main__":
                                                                               predictions_with_probabilities, regions)
 
     fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(6, 6))
-    ax.imshow(Image.open(image))
-    for r, letter in zip(regions, predictions):
+    ax.imshow(Image.open(image).convert("L"), cmap=cm.get_cmap("gray"))
+    for r, letter, probs in zip(regions, predictions, predictions_with_probabilities):
+        prob = max(probs)
         x, y, x_end, y_end = r
         width = x_end - x
         height = y_end - y
@@ -91,4 +93,3 @@ if __name__ == "__main__":
         ax.text(x, y, letter.upper(), color="purple", fontsize="24")
 
     plt.show()
-    print("Hello")
