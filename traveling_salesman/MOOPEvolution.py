@@ -5,14 +5,24 @@ from traveling_salesman.TSPIndividual import TSPIndividual
 
 
 class EvolutionWorld:
-    def __init__(self, parent_pool_size=10, number_of_children=10, tournament_e=0.1):
+    def __init__(self, parent_population_size=10, number_of_children=10, tournament_e=0.1):
         self.tournament_e = tournament_e
         self.resulting_population, self.parent_population, self.offspring_population = set(), set(), set()
-        self.n = parent_pool_size
+        self.parent_population_size = parent_population_size
         self.number_of_children = number_of_children
         self.distance, self.rank = dict(), dict()
 
+        self.cost_dict = dict()
+        self.cost_dict["cost"], self.cost_dict["distance"] = self.load_travel_data()
+
+        self.generate_initial_population()
+
+    def generate_initial_population(self):
+        for i in range(self.parent_population_size*2):
+            self.offspring_population.add(TSPIndividual(cost_dict=self.cost_dict))
+
     def main_loop(self):
+        self.assess_offspring_fitness()
         self.resulting_population = self.parent_population.union(self.offspring_population)
         new_parents = set()
         distance = dict()
@@ -20,11 +30,14 @@ class EvolutionWorld:
 
         f, rank = self.fast_non_dominated_sort(self.resulting_population)
 
-        while len(new_parents) + len(f[i]) <= self.n:
+        while len(new_parents) + len(f[i]) <= self.parent_population_size:
             current_front = f[i]
-            distance.update(self.crowding_distance_assignment(current_front))
-            new_parents = new_parents.union(current_front)
+            if current_front:
+                distance.update(self.crowding_distance_assignment(current_front))
+                new_parents = new_parents.union(current_front)
             i += 1
+            if i == len(f):
+                break
 
         cutoff_front_set = f[i]
         distance.update(self.crowding_distance_assignment(cutoff_front_set))
@@ -34,7 +47,7 @@ class EvolutionWorld:
 
         cutoff_front = self.crowded_comparison_sort(cutoff_front_set, rank, distance)
 
-        self.parent_population = new_parents.union(cutoff_front[:self.n - len(new_parents)])
+        self.parent_population = new_parents.union(cutoff_front[:self.parent_population_size - len(new_parents)])
 
         self.offspring_population = self.make_new_offspring(self.parent_population)
 
@@ -94,6 +107,8 @@ class EvolutionWorld:
 
             i += 1
             f.append(next_front)
+
+        f.pop(-1)  # Last set is always empty, so remove it
 
         return f, rank
 
@@ -166,13 +181,14 @@ class EvolutionWorld:
 
     def make_new_offspring(self, parent_population):
         new_offspring = set()
+        parent_population_list = list(parent_population)
         for i in range(self.number_of_children):
-            first_individual = random.choice(parent_population)
-            second_individual = random.choice(parent_population)
+            first_individual = random.choice(parent_population_list)
+            second_individual = random.choice(parent_population_list)
             chosen_individual = self.binary_tournament_select(first_individual, second_individual)
             mutated_genotype = chosen_individual.get_mutated_simple_genotype()
 
-            new_offspring.add(TSPIndividual(mutated_genotype))
+            new_offspring.add(TSPIndividual(cost_dict=self.cost_dict, genotype=mutated_genotype))
 
         return new_offspring
 
@@ -182,3 +198,7 @@ class EvolutionWorld:
         if random.random() < self.tournament_e:
             return ranking[1]
         return ranking[0]
+
+    def assess_offspring_fitness(self):
+        for individual in self.offspring_population:
+            individual.assess_fitness()
