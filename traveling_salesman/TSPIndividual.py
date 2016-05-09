@@ -4,9 +4,10 @@ import random
 class TSPIndividual:
     id_counter = 0
 
-    def __init__(self, genotype=None):
+    def __init__(self, cost_dict, genotype=None):
         self.fitnesses = dict()
         self.id = TSPIndividual.id_counter
+        self.cost_dict = cost_dict
         TSPIndividual.id_counter += 1
 
         if genotype is None:
@@ -56,3 +57,14 @@ class TSPIndividual:
         random.shuffle(genotype)
 
         return genotype
+
+    def assess_fitness(self):
+        if not self.fitnesses:  # Fitnesses have not yet been assessed
+            for key in self.cost_dict:  # For all the objectives that are to be assessed
+                current_costs = self.cost_dict[key]  # The costs for currently examined objective
+                counter = 0
+                for i in range(len(self.genotype)):
+                    first_city, second_city = self.genotype[i - 1], self.genotype[i]
+                    counter += current_costs[(first_city, second_city)]  # Add cost of this objective to the counter
+
+                self.fitnesses[key] = counter  # Set the fitness of this objective to what has been counted
