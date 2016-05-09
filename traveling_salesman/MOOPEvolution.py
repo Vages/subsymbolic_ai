@@ -36,7 +36,7 @@ class EvolutionWorld:
 
         self.parent_population = new_parents.union(cutoff_front[:self.n - len(new_parents)])
 
-        self.offspring_population = self.make_new_children(self.parent_population)  # TODO: Implement make new population
+        self.offspring_population = self.make_new_offspring(self.parent_population)
 
     @staticmethod
     def crowded_comparison_sort(population, rank, distance):
@@ -164,7 +164,7 @@ class EvolutionWorld:
 
         return costs
 
-    def make_new_children(self, parent_population):
+    def make_new_offspring(self, parent_population):
         new_offspring = set()
         for i in range(self.number_of_children):
             first_individual = random.choice(parent_population)
@@ -174,7 +174,7 @@ class EvolutionWorld:
 
             new_offspring.add(TSPIndividual(mutated_genotype))
 
-        self.offspring_population = new_offspring
+        return new_offspring
 
     def binary_tournament_select(self, one, other):
         ranking = self.crowded_comparison_sort([one, other], self.rank, self.distance)
