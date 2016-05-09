@@ -6,8 +6,8 @@ class TSPIndividual:
 
     def __init__(self, genotype=None):
         self.fitnesses = dict()
-        self.id = self.id_counter
-        self.id_counter += 1
+        self.id = TSPIndividual.id_counter
+        TSPIndividual.id_counter += 1
 
         if genotype is None:
             self.genotype = self.generate_random_simple_genotype()
