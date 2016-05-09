@@ -2,14 +2,14 @@ from collections import defaultdict
 
 
 class EvolutionWorld:
-    def __init__(self, n=10):
+    def __init__(self, parent_pool_size=10):
         self.resulting_population, self.parent_population, self.offspring_population = set(), set(), set()
-        self.n = 10
+        self.n = parent_pool_size
 
     def main_loop(self):
         self.resulting_population = self.parent_population.union(self.offspring_population)
         new_parents = set()
-        distance = defaultdict(int)
+        distance = dict()
         i = 0
 
         f, rank = self.fast_non_dominated_sort(self.resulting_population)
@@ -19,6 +19,15 @@ class EvolutionWorld:
             distance.update(self.crowding_distance_assignment(current_front))
             new_parents = new_parents.union(current_front)
             i += 1
+
+        cutoff_front_set = f[i]
+        distance.update(self.crowding_distance_assignment(cutoff_front_set))
+
+        cutoff_front = self.crowded_comparison_sort(cutoff_front_set, rank, distance)
+
+        self.parent_population = new_parents.union(cutoff_front[:self.n - len(new_parents)])
+
+        self.offspring_population = self.make_new_population(self.parent_population)
 
     @staticmethod
     def crowded_comparison_sort(population, rank, distance):
@@ -95,7 +104,7 @@ class EvolutionWorld:
             span = f_max - f_min
             if span == 0:  # The population does not vary in this property
                 continue
-            population_list[0] = population_list[population_size - 1] = float("inf")
+            distance[population_list[0]] = distance[population_list[population_size - 1]] = float("inf")
 
             for i in range(1, population_size - 1):
                 current_distance = (population_list[i + 1].fitnesses[m] - population_list[i - 1].fitnesses[m]) / span
@@ -145,3 +154,6 @@ class EvolutionWorld:
                 costs[second_way] = data
 
         return costs
+
+    def make_new_population(self, parent_population):
+        pass
