@@ -84,3 +84,56 @@ class TSPIndividual(MOOPIndividual):
             edges[current_city] = {previous_city, next_city}
 
         return edges
+
+    def mate_with(self, other):
+        """
+        Uses edge recombination to mate two individuals: https://en.wikipedia.org/wiki/Edge_recombination_operator#cite_note-2
+
+        :param other: Another TSPInvidiual
+        :return: Offspring genotype
+        """
+        my_edge_dict = self.convert_genotype_to_edge_dict()
+        other_edge_dict = other.convert_genotype_to_edge_dict()
+        combined_edge_dict = dict()
+
+        for city in my_edge_dict:
+            combined_edge_dict[city] = my_edge_dict[city].union(other_edge_dict[city])
+
+        my_starting_city = self.genotype[0]
+        other_starting_city = other.genotype[0]
+
+        random_starting_city = random.choice([my_starting_city, other_starting_city])
+
+        new_tour = []
+        current_city = random_starting_city
+
+        while len(new_tour) < len(self.genotype):
+            new_tour.append(current_city)
+
+            connected_cities = combined_edge_dict[current_city]
+            del combined_edge_dict[current_city]
+            # Delete this city from all its connected cities
+            for neighbor_city in connected_cities:
+                combined_edge_dict[neighbor_city].remove(current_city)
+
+            if connected_cities:
+                # Find the cities with the fewest connections
+                fewest_connections = float("inf")
+                least_connected_cities = []
+
+                for neighbor_city in connected_cities:
+                    connections = len(combined_edge_dict[neighbor_city])
+                    if connections == fewest_connections:
+                        least_connected_cities.append(neighbor_city)
+                    elif connections < fewest_connections:
+                        least_connected_cities = [neighbor_city]
+                        fewest_connections = connections
+
+                current_city = random.choice(least_connected_cities)
+
+            else:
+                remaining_cities = list(combined_edge_dict.keys())
+                if remaining_cities:
+                    current_city = random.choice(remaining_cities)
+
+        return new_tour
