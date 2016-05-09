@@ -6,22 +6,31 @@ from traveling_salesman.TSPIndividual import TSPIndividual
 
 class EvolutionWorld:
     def __init__(self, parent_population_size=10, number_of_children=10, tournament_e=0.1):
+        # Set initial variables
         self.tournament_e = tournament_e
         self.resulting_population, self.parent_population, self.offspring_population = set(), set(), set()
         self.parent_population_size = parent_population_size
         self.number_of_children = number_of_children
         self.distance, self.rank = dict(), dict()
 
+        # Load travel costs from disk
         self.cost_dict = dict()
         self.cost_dict["cost"], self.cost_dict["distance"] = self.load_travel_data()
 
+        # Generate an initial population and put it in the offspring pool
         self.generate_initial_population()
 
     def generate_initial_population(self):
+        """
+        Generates an initial population twice the size of the parent pool.
+        """
         for i in range(self.parent_population_size*2):
             self.offspring_population.add(TSPIndividual(cost_dict=self.cost_dict))
 
     def main_loop(self):
+        """
+        Runs one complete round of evolution.
+        """
         self.assess_offspring_fitness()
         self.resulting_population = self.parent_population.union(self.offspring_population)
         new_parents = set()
@@ -114,6 +123,12 @@ class EvolutionWorld:
 
     @staticmethod
     def crowding_distance_assignment(population):
+        """
+        Assigns a crowding distance to a population in the same front.
+
+        :param population: A population of individuals.
+        :return: A dict of the crowding distances.
+        """
         distance = defaultdict(int)
 
         population_list = list(population)
@@ -136,6 +151,41 @@ class EvolutionWorld:
                 distance[population_list[i]] += current_distance
 
         return distance
+
+    def make_new_offspring(self, parent_population):
+        """
+        Fills the offspring pool with new offspring.
+        :param parent_population: The parent population used to generate offspring.
+        :return:
+        """
+        new_offspring = set()
+        parent_population_list = list(parent_population)
+        for i in range(self.number_of_children):
+            first_individual = random.choice(parent_population_list)
+            second_individual = random.choice(parent_population_list)
+            chosen_individual = self.binary_tournament_select(first_individual, second_individual)
+            mutated_genotype = chosen_individual.get_mutated_simple_genotype()
+
+            new_offspring.add(TSPIndividual(cost_dict=self.cost_dict, genotype=mutated_genotype))
+
+        return new_offspring
+
+    def binary_tournament_select(self, one, other):
+        """
+        Holds a binary tournament between two parents contending to make offspring.
+        :param one: An individual
+        :param other: Another individual
+        :return: The winner of the tournament
+        """
+        ranking = self.crowded_comparison_sort([one, other], self.rank, self.distance)
+
+        if random.random() < self.tournament_e:
+            return ranking[1]
+        return ranking[0]
+
+    def assess_offspring_fitness(self):
+        for individual in self.offspring_population:
+            individual.assess_fitness()
 
     @classmethod
     def load_travel_data(cls):
@@ -178,27 +228,3 @@ class EvolutionWorld:
                 costs[second_way] = data
 
         return costs
-
-    def make_new_offspring(self, parent_population):
-        new_offspring = set()
-        parent_population_list = list(parent_population)
-        for i in range(self.number_of_children):
-            first_individual = random.choice(parent_population_list)
-            second_individual = random.choice(parent_population_list)
-            chosen_individual = self.binary_tournament_select(first_individual, second_individual)
-            mutated_genotype = chosen_individual.get_mutated_simple_genotype()
-
-            new_offspring.add(TSPIndividual(cost_dict=self.cost_dict, genotype=mutated_genotype))
-
-        return new_offspring
-
-    def binary_tournament_select(self, one, other):
-        ranking = self.crowded_comparison_sort([one, other], self.rank, self.distance)
-
-        if random.random() < self.tournament_e:
-            return ranking[1]
-        return ranking[0]
-
-    def assess_offspring_fitness(self):
-        for individual in self.offspring_population:
-            individual.assess_fitness()
