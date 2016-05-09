@@ -1,10 +1,16 @@
 from collections import defaultdict
+import random
+
+from traveling_salesman.TSPIndividual import TSPIndividual
 
 
 class EvolutionWorld:
-    def __init__(self, parent_pool_size=10):
+    def __init__(self, parent_pool_size=10, number_of_children=10, tournament_e=0.1):
+        self.tournament_e = tournament_e
         self.resulting_population, self.parent_population, self.offspring_population = set(), set(), set()
         self.n = parent_pool_size
+        self.number_of_children = number_of_children
+        self.distance, self.rank = dict(), dict()
 
     def main_loop(self):
         self.resulting_population = self.parent_population.union(self.offspring_population)
@@ -23,11 +29,14 @@ class EvolutionWorld:
         cutoff_front_set = f[i]
         distance.update(self.crowding_distance_assignment(cutoff_front_set))
 
+        self.distance = distance
+        self.rank = rank
+
         cutoff_front = self.crowded_comparison_sort(cutoff_front_set, rank, distance)
 
         self.parent_population = new_parents.union(cutoff_front[:self.n - len(new_parents)])
 
-        self.offspring_population = self.make_new_population(self.parent_population)  # TODO: Implement make new population
+        self.offspring_population = self.make_new_children(self.parent_population)  # TODO: Implement make new population
 
     @staticmethod
     def crowded_comparison_sort(population, rank, distance):
@@ -155,5 +164,21 @@ class EvolutionWorld:
 
         return costs
 
-    def make_new_population(self, parent_population):
-        pass
+    def make_new_children(self, parent_population):
+        new_offspring = set()
+        for i in range(self.number_of_children):
+            first_individual = random.choice(parent_population)
+            second_individual = random.choice(parent_population)
+            chosen_individual = self.binary_tournament_select(first_individual, second_individual)
+            mutated_genotype = chosen_individual.get_mutated_simple_genotype()
+
+            new_offspring.add(TSPIndividual(mutated_genotype))
+
+        self.offspring_population = new_offspring
+
+    def binary_tournament_select(self, one, other):
+        ranking = self.crowded_comparison_sort([one, other], self.rank, self.distance)
+
+        if random.random() < self.tournament_e:
+            return ranking[1]
+        return ranking[0]
