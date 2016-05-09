@@ -5,6 +5,7 @@ import pickle
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import matplotlib.cm as cm
+import sys
 
 
 def resize_quadratic_image(image):
@@ -55,7 +56,7 @@ def get_image_tiles_from_image(image_path="store.jpg"):
     return results, regions
 
 
-def filter_predictions(predictions, probabilities, regions, threshold=0.9):
+def filter_predictions(predictions, probabilities, regions, threshold=0.8):
     new_predictions, new_probabilities, new_regions = [], [], []
 
     for pred, prob, reg in zip(predictions, probabilities, regions):
@@ -70,8 +71,11 @@ def filter_predictions(predictions, probabilities, regions, threshold=0.9):
 
 
 if __name__ == "__main__":
-    classifier = pickle.load(open("classifier.pickle", "rb"))
-    image = "wooden_blocks.jpg"
+    classifier = pickle.load(open("svm_classifier.pickle", "rb"))
+    if len(sys.argv) > 1:
+        image = sys.argv[1]
+    else:
+        image = "google_screenshot.png"
     inputs, regions = get_image_tiles_from_image(image)
     predictions = classifier.predict(inputs)
     predictions_with_probabilities = classifier.predict_proba(inputs)
@@ -90,6 +94,6 @@ if __name__ == "__main__":
         rect = mpatches.Rectangle((x, y), width, height, fill=False, edgecolor='red', linewidth=2)
 
         ax.add_patch(rect)
-        ax.text(x, y, letter.upper(), color="purple", fontsize="24")
+        ax.text(x, y, letter.upper() + " " + str(round(float(prob), 2)), color="green")
 
     plt.show()
