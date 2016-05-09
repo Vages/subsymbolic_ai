@@ -1,20 +1,9 @@
 import random
 
 
-class TSPIndividual:
-    id_counter = 0
-
-    def __init__(self, cost_dict, genotype=None):
+class MOOPIndividual:
+    def __init__(self):
         self.fitnesses = dict()
-        self.id = TSPIndividual.id_counter
-        self.cost_dict = cost_dict
-        TSPIndividual.id_counter += 1
-
-        if genotype is None:
-            self.genotype = self.generate_random_simple_genotype()
-
-        else:
-            self.genotype = genotype
 
     def dominates(self, other):
         """
@@ -37,6 +26,22 @@ class TSPIndividual:
                 return False
 
         return dominates_in_one_objective
+
+
+class TSPIndividual(MOOPIndividual):
+    id_counter = 0
+
+    def __init__(self, cost_dict, genotype=None):
+        super(TSPIndividual, self).__init__()
+        self.id = TSPIndividual.id_counter
+        self.cost_dict = cost_dict
+        TSPIndividual.id_counter += 1
+
+        if genotype is None:
+            self.genotype = self.generate_random_simple_genotype()
+
+        else:
+            self.genotype = genotype
 
     def get_mutated_simple_genotype(self):
         copied_genotype = self.genotype[:]
