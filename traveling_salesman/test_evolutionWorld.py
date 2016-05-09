@@ -30,3 +30,15 @@ class TestEvolutionWorld(TestCase):
         for ind in population:
             cartesian = (ind.fitnesses["x"], ind.fitnesses["y"])
             self.assertAlmostEqual(expected_distances[cartesian], calculated_distances[ind], delta=0.001)
+
+    def test_crowded_comparison_sort(self):
+        nodes = [1, 2, 3, 4, 5, 6, 7]
+        ranks = {1: 0, 2: 0, 3: 0, 4: 0, 5: 1, 6: 1, 7: 1}
+        inf = float("inf")
+        distances = {1: inf, 2: 1, 3: 2, 4: inf, 5: inf, 6: 1, 7: inf}
+
+        expected_sequence = [1, 4, 3, 2, 5, 7, 6]
+
+        actual_sequence = EvolutionWorld.crowded_comparison_sort(nodes, ranks, distances)
+
+        self.assertEqual(expected_sequence, actual_sequence)
