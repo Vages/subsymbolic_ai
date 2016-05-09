@@ -73,3 +73,14 @@ class TSPIndividual(MOOPIndividual):
                     counter += current_costs[(first_city, second_city)]  # Add cost of this objective to the counter
 
                 self.fitnesses[key] = counter  # Set the fitness of this objective to what has been counted
+
+    def convert_genotype_to_edge_dict(self):
+        edges = dict()
+        for i in range(len(self.genotype)):
+            previous_city = self.genotype[i-1]
+            current_city = self.genotype[i]
+            next_city = self.genotype[(i + 1) % len(self.genotype)]  # Modulo to avoid index error
+
+            edges[current_city] = {previous_city, next_city}
+
+        return edges
