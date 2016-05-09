@@ -24,8 +24,8 @@ class EvolutionWorld:
         """
         Generates an initial population twice the size of the parent pool.
         """
-        for i in range(self.parent_population_size*2):
-            self.offspring_population.add(TSPIndividual(cost_dict=self.cost_dict))
+        self.offspring_population = {TSPIndividual(cost_dict=self.cost_dict) for i in
+                                     range(self.parent_population_size * 2)}
 
     def main_loop(self):
         """
@@ -35,35 +35,32 @@ class EvolutionWorld:
         self.resulting_population = self.parent_population.union(self.offspring_population)
         new_parents = set()
         distance = dict()
-        i = 0
 
-        f, rank = self.fast_non_dominated_sort(self.resulting_population)
+        front_list, rank = self.fast_non_dominated_sort(self.resulting_population)
 
-        while len(new_parents) + len(f[i]) <= self.parent_population_size:
-            current_front = f[i]
-            if current_front:
-                distance.update(self.crowding_distance_assignment(current_front))
-                new_parents = new_parents.union(current_front)
-            i += 1
-            if i == len(f):
+        for i in range(len(front_list)):
+            front_i = front_list[i]  # Get current front
+            distance.update(self.crowding_distance_assignment(front_i))  # Update their distances
+
+            if len(new_parents) + len(front_i) > self.parent_population_size:
+                # Not enough room for all members of front
+                sorted_by_distance = self.crowded_comparison_sort(front_i, rank, distance)
+                stop_index = self.parent_population_size - len(new_parents)  # First index to not be included
+                new_parents = new_parents.union(sorted_by_distance[:stop_index])  # Add to parent pool
                 break
 
-        cutoff_front_set = f[i]
-        distance.update(self.crowding_distance_assignment(cutoff_front_set))
+            new_parents = new_parents.union(front_i)
 
+        self.parent_population = new_parents
         self.distance = distance
         self.rank = rank
-
-        cutoff_front = self.crowded_comparison_sort(cutoff_front_set, rank, distance)
-
-        self.parent_population = new_parents.union(cutoff_front[:self.parent_population_size - len(new_parents)])
 
         self.offspring_population = self.make_new_offspring(self.parent_population)
 
     @staticmethod
     def crowded_comparison_sort(population, rank, distance):
         """
-        Sorts a list by ascending rank and increasing distance.
+        Sorts a list by ascending rank and decreasing distance.
 
         :param population: A population set.
         :param rank: A dictionary of ranks.
@@ -71,9 +68,7 @@ class EvolutionWorld:
         :return:
         """
         population_as_list = list(population)
-
         population_as_list.sort(key=lambda x: (rank[x], -distance[x]))
-
         return population_as_list
 
     @staticmethod
@@ -138,17 +133,27 @@ class EvolutionWorld:
 
         for m in objectives:
             population_list.sort(key=lambda x: x.fitnesses[m])
-            f_min = population_list[0].fitnesses[m]
-            f_max = population_list[population_size - 1].fitnesses[m]
+            min_element = population_list[0]
+            max_element = population_list[population_size - 1]
+
+            f_min = min_element.fitnesses[m]
+            f_max = max_element.fitnesses[m]
+
             span = f_max - f_min
+
             if span == 0:  # The population does not vary in this property
                 continue
-            distance[population_list[0]] = distance[population_list[population_size - 1]] = float("inf")
+
+            distance[min_element] = distance[max_element] = float("inf")
 
             for i in range(1, population_size - 1):
-                current_distance = (population_list[i + 1].fitnesses[m] - population_list[i - 1].fitnesses[m]) / span
+                previous_element = population_list[i - 1]
+                current_element = population_list[i]
+                next_element = population_list[i + 1]
 
-                distance[population_list[i]] += current_distance
+                current_distance = (next_element.fitnesses[m] - previous_element.fitnesses[m]) / span
+
+                distance[current_element] += current_distance
 
         return distance
 
@@ -186,6 +191,10 @@ class EvolutionWorld:
     def assess_offspring_fitness(self):
         for individual in self.offspring_population:
             individual.assess_fitness()
+
+    def run_for_x_generations(self, generations=10000):
+        for i in range(generations):
+            self.main_loop()
 
     @classmethod
     def load_travel_data(cls):
