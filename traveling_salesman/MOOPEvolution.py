@@ -5,12 +5,13 @@ from traveling_salesman.TSPIndividual import TSPIndividual
 
 
 class EvolutionWorld:
-    def __init__(self, parent_population_size=10, number_of_children=10, tournament_e=0.1):
+    def __init__(self, parent_population_size=100, tournament_e=0.1, mutation_rate=0.8, crossover_rate=0.5):
         # Set initial variables
+        self.mutation_rate = mutation_rate
+        self.crossover_rate = crossover_rate
         self.tournament_e = tournament_e
         self.resulting_population, self.parent_population, self.offspring_population = set(), set(), set()
         self.parent_population_size = parent_population_size
-        self.number_of_children = number_of_children
         self.distance, self.rank = dict(), dict()
 
         # Load travel costs from disk
@@ -165,13 +166,28 @@ class EvolutionWorld:
         """
         new_offspring = set()
         parent_population_list = list(parent_population)
-        for i in range(self.number_of_children):
+
+        while len(new_offspring) < self.parent_population_size:
+            change_happened = False
             first_individual = random.choice(parent_population_list)
             second_individual = random.choice(parent_population_list)
             chosen_individual = self.binary_tournament_select(first_individual, second_individual)
-            mutated_genotype = chosen_individual.get_mutated_simple_genotype()
 
-            new_offspring.add(TSPIndividual(cost_dict=self.cost_dict, genotype=mutated_genotype))
+            if random.random() < self.crossover_rate:
+                change_happened = True
+                first_individual = random.choice(parent_population_list)
+                second_individual = random.choice(parent_population_list)
+                chosen_mate = self.binary_tournament_select(first_individual, second_individual)
+                child_genotype = chosen_individual.mate_with(chosen_mate)
+                chosen_individual = TSPIndividual(cost_dict=self.cost_dict, genotype=child_genotype)
+
+            if random.random() < self.mutation_rate:
+                change_happened = True
+                mutated_genotype = chosen_individual.get_mutated_simple_genotype()
+                chosen_individual = TSPIndividual(cost_dict=self.cost_dict, genotype=mutated_genotype)
+
+            if change_happened:
+                new_offspring.add(chosen_individual)
 
         return new_offspring
 
@@ -192,8 +208,10 @@ class EvolutionWorld:
         for individual in self.offspring_population:
             individual.assess_fitness()
 
-    def run_for_x_generations(self, generations=10000):
+    def run_for_x_generations(self, generations=1000):
         for i in range(generations):
+            if i % 100 == 0:
+                print(i)
             self.main_loop()
 
     @classmethod
