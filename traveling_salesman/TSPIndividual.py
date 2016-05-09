@@ -40,7 +40,6 @@ class TSPIndividual:
     def get_mutated_simple_genotype(self):
         copied_genotype = self.genotype[:]
         i, j = random.randrange(len(self.genotype)), random.randrange(len(self.genotype))
-
         copied_genotype[i], copied_genotype[j] = copied_genotype[j], copied_genotype[i]
 
         return copied_genotype
