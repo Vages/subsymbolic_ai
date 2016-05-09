@@ -27,7 +27,7 @@ class EvolutionWorld:
 
         self.parent_population = new_parents.union(cutoff_front[:self.n - len(new_parents)])
 
-        self.offspring_population = self.make_new_population(self.parent_population)
+        self.offspring_population = self.make_new_population(self.parent_population)  # TODO: Implement make new population
 
     @staticmethod
     def crowded_comparison_sort(population, rank, distance):
