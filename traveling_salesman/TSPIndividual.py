@@ -49,13 +49,6 @@ class TSPIndividual(MOOPIndividual):
         else:
             self.genotype = genotype
 
-    def get_mutated_genotype(self):
-        copied_genotype = self.genotype[:]
-        i, j = random.randrange(len(self.genotype)), random.randrange(len(self.genotype))
-        copied_genotype[i], copied_genotype[j] = copied_genotype[j], copied_genotype[i]
-
-        return copied_genotype
-
     def __hash__(self):
         return hash(self.id)
 
@@ -68,6 +61,13 @@ class TSPIndividual(MOOPIndividual):
         random.shuffle(genotype)
 
         return genotype
+
+    def get_mutated_genotype(self):
+        copied_genotype = self.genotype[:]
+        i, j = random.randrange(len(self.genotype)), random.randrange(len(self.genotype))
+        copied_genotype[i], copied_genotype[j] = copied_genotype[j], copied_genotype[i]
+
+        return copied_genotype
 
     def assess_fitness(self):
         if not self.fitnesses:  # Fitnesses have not yet been assessed
