@@ -96,7 +96,7 @@ class TSPIndividual(MOOPIndividual):
         """
         edges = dict()
         for i in range(len(self.genotype)):
-            previous_city = self.genotype[i-1]
+            previous_city = self.genotype[i - 1]
             current_city = self.genotype[i]
             next_city = self.genotype[(i + 1) % len(self.genotype)]  # Modulo to avoid index error
 
