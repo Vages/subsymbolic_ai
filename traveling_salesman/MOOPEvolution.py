@@ -220,6 +220,9 @@ class EvolutionWorld:
             self.main_loop()
 
     def log_fronts(self):
+        """
+        Logs all the fronts to a json file.
+        """
         current_time = time.time()
         datestring = datetime.datetime.fromtimestamp(current_time).strftime('%Y-%m-%d-%H:%M:%S')
 
