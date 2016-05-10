@@ -188,7 +188,7 @@ class EvolutionWorld:
 
             if random.random() < self.mutation_rate:
                 change_happened = True
-                mutated_genotype = chosen_individual.get_mutated_simple_genotype()
+                mutated_genotype = chosen_individual.get_mutated_genotype()
                 chosen_individual = TSPIndividual(cost_dict=self.cost_dict, genotype=mutated_genotype)
 
             if change_happened:

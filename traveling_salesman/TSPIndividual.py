@@ -44,12 +44,12 @@ class TSPIndividual(MOOPIndividual):
         TSPIndividual.id_counter += 1
 
         if genotype is None:
-            self.genotype = self.generate_random_simple_genotype()
+            self.genotype = self.generate_random_genotype()
 
         else:
             self.genotype = genotype
 
-    def get_mutated_simple_genotype(self):
+    def get_mutated_genotype(self):
         copied_genotype = self.genotype[:]
         i, j = random.randrange(len(self.genotype)), random.randrange(len(self.genotype))
         copied_genotype[i], copied_genotype[j] = copied_genotype[j], copied_genotype[i]
@@ -63,7 +63,7 @@ class TSPIndividual(MOOPIndividual):
         return self.id == other.id
 
     @staticmethod
-    def generate_random_simple_genotype(length=48):
+    def generate_random_genotype(length=48):
         genotype = [i + 1 for i in range(length)]
         random.shuffle(genotype)
 
