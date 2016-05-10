@@ -65,6 +65,89 @@ class EvolutionWorld:
         self.offspring_population = self.make_new_offspring(self.parent_population)
         self.generations_run += 1
 
+    def make_new_offspring(self, parent_population):
+        """
+        Fills the offspring pool with new offspring.
+        :param parent_population: The parent population used to generate offspring.
+        :return:
+        """
+        new_offspring = set()
+        parent_population_list = list(parent_population)
+
+        while len(new_offspring) < self.parent_population_size:
+            change_happened = False
+            first_individual = random.choice(parent_population_list)
+            second_individual = random.choice(parent_population_list)
+            chosen_individual = self.binary_tournament_select(first_individual, second_individual)
+
+            if random.random() < self.crossover_rate:
+                change_happened = True
+                first_individual = random.choice(parent_population_list)
+                second_individual = random.choice(parent_population_list)
+                chosen_mate = self.binary_tournament_select(first_individual, second_individual)
+                child_genotype = chosen_individual.mate_with(chosen_mate)
+                chosen_individual = TSPIndividual(cost_dict=self.cost_dict, genotype=child_genotype)
+
+            if random.random() < self.mutation_rate:
+                change_happened = True
+                mutated_genotype = chosen_individual.get_mutated_genotype()
+                chosen_individual = TSPIndividual(cost_dict=self.cost_dict, genotype=mutated_genotype)
+
+            if change_happened:
+                new_offspring.add(chosen_individual)
+
+        return new_offspring
+
+    def binary_tournament_select(self, one, other):
+        """
+        Holds a binary tournament between two parents contending to make offspring.
+        :param one: An individual
+        :param other: Another individual
+        :return: The winner of the tournament
+        """
+        ranking = self.crowded_comparison_sort([one, other], self.rank, self.distance)
+
+        if random.random() < self.tournament_e:
+            return ranking[1]
+        return ranking[0]
+
+    def assess_offspring_fitness(self):
+        for individual in self.offspring_population:
+            individual.assess_fitness()
+
+    def run_for_x_generations(self, generations=1000):
+        for i in range(generations):
+            if i % 100 == 0:
+                print(self.generations_run + i)
+            self.main_loop()
+
+    def log_fronts(self):
+        """
+        Logs all the fronts to a json file.
+        """
+        current_time = time.time()
+        datestring = datetime.datetime.fromtimestamp(current_time).strftime('%Y-%m-%d-%H:%M:%S')
+
+        log_list = []
+        for front in self.front_list:
+            this_front_fitnesses = []
+            for individual in front:
+                this_front_fitnesses.append(individual.fitnesses)
+
+            key1, key2 = tuple(individual.fitnesses.keys())
+
+            this_front_fitnesses.sort(key=lambda x: (x[key1], -x[key2]))
+
+            log_list.append(this_front_fitnesses)
+
+        log_name = datestring + '-P' + str(self.parent_population_size) + '-G' + str(self.generations_run) + '-M' + str(
+            self.mutation_rate) + '-C' + str(self.mutation_rate) + '-E' + str(self.tournament_e) + '.log'
+
+        log_path = 'traveling_salesman/logs/'
+
+        with open(log_path + log_name, 'w') as log_file:
+            json.dump(log_list, log_file, indent=2)
+
     @staticmethod
     def crowded_comparison_sort(population, rank, distance):
         """
@@ -164,89 +247,6 @@ class EvolutionWorld:
                 distance[current_element] += current_distance
 
         return distance
-
-    def make_new_offspring(self, parent_population):
-        """
-        Fills the offspring pool with new offspring.
-        :param parent_population: The parent population used to generate offspring.
-        :return:
-        """
-        new_offspring = set()
-        parent_population_list = list(parent_population)
-
-        while len(new_offspring) < self.parent_population_size:
-            change_happened = False
-            first_individual = random.choice(parent_population_list)
-            second_individual = random.choice(parent_population_list)
-            chosen_individual = self.binary_tournament_select(first_individual, second_individual)
-
-            if random.random() < self.crossover_rate:
-                change_happened = True
-                first_individual = random.choice(parent_population_list)
-                second_individual = random.choice(parent_population_list)
-                chosen_mate = self.binary_tournament_select(first_individual, second_individual)
-                child_genotype = chosen_individual.mate_with(chosen_mate)
-                chosen_individual = TSPIndividual(cost_dict=self.cost_dict, genotype=child_genotype)
-
-            if random.random() < self.mutation_rate:
-                change_happened = True
-                mutated_genotype = chosen_individual.get_mutated_genotype()
-                chosen_individual = TSPIndividual(cost_dict=self.cost_dict, genotype=mutated_genotype)
-
-            if change_happened:
-                new_offspring.add(chosen_individual)
-
-        return new_offspring
-
-    def binary_tournament_select(self, one, other):
-        """
-        Holds a binary tournament between two parents contending to make offspring.
-        :param one: An individual
-        :param other: Another individual
-        :return: The winner of the tournament
-        """
-        ranking = self.crowded_comparison_sort([one, other], self.rank, self.distance)
-
-        if random.random() < self.tournament_e:
-            return ranking[1]
-        return ranking[0]
-
-    def assess_offspring_fitness(self):
-        for individual in self.offspring_population:
-            individual.assess_fitness()
-
-    def run_for_x_generations(self, generations=1000):
-        for i in range(generations):
-            if i % 100 == 0:
-                print(self.generations_run + i)
-            self.main_loop()
-
-    def log_fronts(self):
-        """
-        Logs all the fronts to a json file.
-        """
-        current_time = time.time()
-        datestring = datetime.datetime.fromtimestamp(current_time).strftime('%Y-%m-%d-%H:%M:%S')
-
-        log_list = []
-        for front in self.front_list:
-            this_front_fitnesses = []
-            for individual in front:
-                this_front_fitnesses.append(individual.fitnesses)
-
-            key1, key2 = tuple(individual.fitnesses.keys())
-
-            this_front_fitnesses.sort(key=lambda x: (x[key1], -x[key2]))
-
-            log_list.append(this_front_fitnesses)
-
-        log_name = datestring + '-P' + str(self.parent_population_size) + '-G' + str(self.generations_run) + '-M' + str(
-            self.mutation_rate) + '-C' + str(self.mutation_rate) + '-E' + str(self.tournament_e) + '.log'
-
-        log_path = 'traveling_salesman/logs/'
-
-        with open(log_path + log_name, 'w') as log_file:
-            json.dump(log_list, log_file, indent=2)
 
     @classmethod
     def load_travel_data(cls):
