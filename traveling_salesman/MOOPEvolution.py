@@ -18,6 +18,7 @@ class EvolutionWorld:
         self.parent_population_size = parent_population_size
         self.distance, self.rank = dict(), dict()
         self.front_list = list()
+        self.generations_run = 0
 
         # Load travel costs from disk
         self.cost_dict = dict()
@@ -62,6 +63,7 @@ class EvolutionWorld:
         self.rank = rank
 
         self.offspring_population = self.make_new_offspring(self.parent_population)
+        self.generations_run += 1
 
     @staticmethod
     def crowded_comparison_sort(population, rank, distance):
@@ -216,7 +218,7 @@ class EvolutionWorld:
     def run_for_x_generations(self, generations=1000):
         for i in range(generations):
             if i % 100 == 0:
-                print(i)
+                print(self.generations_run + i)
             self.main_loop()
 
     def log_fronts(self):
@@ -238,14 +240,13 @@ class EvolutionWorld:
 
             log_list.append(this_front_fitnesses)
 
-
-        log_name = datestring + '-P' + str(self.parent_population_size) + '-M' + str(self.mutation_rate) + '-C' + str(self.mutation_rate) + '-E' + str(self.tournament_e) + '.log'
+        log_name = datestring + '-P' + str(self.parent_population_size) + '-G' + str(self.generations_run) + '-M' + str(
+            self.mutation_rate) + '-C' + str(self.mutation_rate) + '-E' + str(self.tournament_e) + '.log'
 
         log_path = 'traveling_salesman/logs/'
 
         with open(log_path + log_name, 'w') as log_file:
             json.dump(log_list, log_file, indent=2)
-
 
     @classmethod
     def load_travel_data(cls):
