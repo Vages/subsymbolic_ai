@@ -27,6 +27,12 @@ class MOOPIndividual:
 
         return dominates_in_one_objective
 
+    def __str__(self):
+        return str(self.fitnesses)
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class TSPIndividual(MOOPIndividual):
     id_counter = 0
