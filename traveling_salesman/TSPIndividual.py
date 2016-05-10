@@ -63,6 +63,11 @@ class TSPIndividual(MOOPIndividual):
         return genotype
 
     def get_mutated_genotype(self):
+        """
+        Returns a copy of the genotype in which two cities have changed places.
+
+        :return: The mutated genotype.
+        """
         copied_genotype = self.genotype[:]
         i, j = random.randrange(len(self.genotype)), random.randrange(len(self.genotype))
         copied_genotype[i], copied_genotype[j] = copied_genotype[j], copied_genotype[i]
@@ -70,6 +75,9 @@ class TSPIndividual(MOOPIndividual):
         return copied_genotype
 
     def assess_fitness(self):
+        """
+        Assesses the cost of a complete tour for both dimensions and stores them in the fitness dictionary.
+        """
         if not self.fitnesses:  # Fitnesses have not yet been assessed
             for key in self.cost_dict:  # For all the objectives that are to be assessed
                 current_costs = self.cost_dict[key]  # The costs for currently examined objective
@@ -80,7 +88,12 @@ class TSPIndividual(MOOPIndividual):
 
                 self.fitnesses[key] = counter  # Set the fitness of this objective to what has been counted
 
-    def convert_genotype_to_edge_dict(self):
+    def _convert_genotype_to_edge_dict(self):
+        """
+        Converts the genotype to a dictionary of the form {city:set(neighbor1, neighbor2)}
+
+        :return: The edge dictionary
+        """
         edges = dict()
         for i in range(len(self.genotype)):
             previous_city = self.genotype[i-1]
@@ -98,8 +111,8 @@ class TSPIndividual(MOOPIndividual):
         :param other: Another TSPInvidiual
         :return: Offspring genotype
         """
-        my_edge_dict = self.convert_genotype_to_edge_dict()
-        other_edge_dict = other.convert_genotype_to_edge_dict()
+        my_edge_dict = self._convert_genotype_to_edge_dict()
+        other_edge_dict = other._convert_genotype_to_edge_dict()
         combined_edge_dict = dict()
 
         for city in my_edge_dict:
