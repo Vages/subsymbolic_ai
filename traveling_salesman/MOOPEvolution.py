@@ -1,3 +1,7 @@
+import json
+import time
+
+import datetime
 from collections import defaultdict
 import random
 
@@ -13,6 +17,7 @@ class EvolutionWorld:
         self.resulting_population, self.parent_population, self.offspring_population = set(), set(), set()
         self.parent_population_size = parent_population_size
         self.distance, self.rank = dict(), dict()
+        self.front_list = list()
 
         # Load travel costs from disk
         self.cost_dict = dict()
@@ -37,10 +42,10 @@ class EvolutionWorld:
         new_parents = set()
         distance = dict()
 
-        front_list, rank = self.fast_non_dominated_sort(self.resulting_population)
+        self.front_list, rank = self.fast_non_dominated_sort(self.resulting_population)
 
-        for i in range(len(front_list)):
-            front_i = front_list[i]  # Get current front
+        for i in range(len(self.front_list)):
+            front_i = self.front_list[i]  # Get current front
             distance.update(self.crowding_distance_assignment(front_i))  # Update their distances
 
             if len(new_parents) + len(front_i) > self.parent_population_size:
@@ -213,6 +218,31 @@ class EvolutionWorld:
             if i % 100 == 0:
                 print(i)
             self.main_loop()
+
+    def log_fronts(self):
+        current_time = time.time()
+        datestring = datetime.datetime.fromtimestamp(current_time).strftime('%Y-%m-%d-%H:%M:%S')
+
+        log_list = []
+        for front in self.front_list:
+            this_front_fitnesses = []
+            for individual in front:
+                this_front_fitnesses.append(individual.fitnesses)
+
+            key1, key2 = tuple(individual.fitnesses.keys())
+
+            this_front_fitnesses.sort(key=lambda x: (x[key1], -x[key2]))
+
+            log_list.append(this_front_fitnesses)
+
+
+        log_name = datestring + '-P' + str(self.parent_population_size) + '-M' + str(self.mutation_rate) + '-C' + str(self.mutation_rate) + '-E' + str(self.tournament_e) + '.log'
+
+        log_path = 'traveling_salesman/logs/'
+
+        with open(log_path + log_name, 'w') as log_file:
+            json.dump(log_list, log_file, indent=2)
+
 
     @classmethod
     def load_travel_data(cls):
