@@ -2,24 +2,12 @@
 Simple demo of a scatter plot.
 """
 import json
-
-import numpy as np
 import os
 import matplotlib.pyplot as plt
 
 log_location = "logs"
 
-log_files = list(os.walk(log_location))[0][2]
-
-default_file = log_files[-1]
-
-with open(os.path.join(log_location, default_file), 'r') as log_contents:
-    log_data = json.load(log_contents)
-
-plot_counter = 121
-
-def draw_plot(front_list=log_data, plot_title="All fronts"):
-    global plot_counter
+def draw_plot(plot_counter, front_list, plot_title):
     x, y = [], []
     largest_cost = -float("inf")
     largest_cost_data = ()
@@ -53,7 +41,6 @@ def draw_plot(front_list=log_data, plot_title="All fronts"):
 
     # area = np.pi * (15 * np.random.rand(N))**2  # 0 to 15 point radiuses
     plt.subplot(plot_counter)
-    plot_counter += 1
     plt.scatter(x, y, alpha=0.5)
     plt.xlabel("distance")
     plt.ylabel("cost")
@@ -68,6 +55,28 @@ def draw_plot(front_list=log_data, plot_title="All fronts"):
              "(" + str(largest_cost_data[0]) + ", " + str(largest_cost_data[1]) + ")")
     plt.grid(True)
 
-draw_plot()
-draw_plot(front_list=[log_data[0]], plot_title="Pareto front")
-plt.show()
+
+def draw_both_plots(data):
+    counter = 121
+    draw_plot(plot_counter=counter, front_list=data, plot_title="All fronts")
+    counter += 1
+    draw_plot(plot_counter=counter, front_list=[data[0]], plot_title="Pareto front")
+
+
+def draw_last_log(file_names):
+    default_file = file_names[-1]
+    visualize_data_in_file(default_file)
+
+
+def visualize_data_in_file(file):
+    with open(os.path.join(log_location, file), 'r') as log_contents:
+        log_data = json.load(log_contents)
+    draw_both_plots(log_data)
+
+
+if __name__ == "__main__":
+    #user_choice = int(input("Log visualizer:\n(1) Visualize last log\n(2) Choose among last 10 logs\n(3)"))
+    log_files = list(os.walk(log_location))[0][2]
+
+    draw_last_log(file_names=log_files)
+    plt.show()
