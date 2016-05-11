@@ -141,7 +141,7 @@ class EvolutionWorld:
             log_list.append(this_front_fitnesses)
 
         log_name = datestring + '-P' + str(self.parent_population_size) + '-G' + str(self.generations_run) + '-M' + str(
-            self.mutation_rate) + '-C' + str(self.mutation_rate) + '-E' + str(self.tournament_e) + '.log'
+            self.mutation_rate) + '-C' + str(self.crossover_rate) + '-E' + str(self.tournament_e) + '.log'
 
         log_path = 'traveling_salesman/logs/'
 
