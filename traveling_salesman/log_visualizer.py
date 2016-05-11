@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 log_location = "logs"
 
+
 def draw_plot(plot_counter, front_list, plot_title):
     x, y = [], []
     largest_cost = -float("inf")
@@ -75,8 +76,24 @@ def visualize_data_in_file(file):
 
 
 if __name__ == "__main__":
-    #user_choice = int(input("Log visualizer:\n(1) Visualize last log\n(2) Choose among last 10 logs\n(3)"))
-    log_files = list(os.walk(log_location))[0][2]
+    user_choice = int(input(
+        "LOG VISUALIZER:\n\n(1) Visualize last log\n(2) Choose among last 10 logs\n(3) Input specific file name\n"))
+    if user_choice == 1 or user_choice == 2:
+        log_filenames = list(os.walk(log_location))[0][2]
 
-    draw_last_log(file_names=log_files)
+    if user_choice == 1:
+        draw_last_log(file_names=log_filenames)
+
+    if user_choice == 2:
+        stop_index = min(len(log_filenames), 10)
+        for i in range(stop_index):
+            print("(" + str(i + 1) + ")", log_filenames[-(i + 1)])
+
+        file_choice = int(input("Choice: "))
+
+        visualize_data_in_file(log_filenames[-file_choice])
+
+    if user_choice == 3:
+        filename = input("Name of file in logs directory: ")
+        visualize_data_in_file(filename)
     plt.show()
