@@ -117,7 +117,8 @@ class EvolutionWorld:
 
     def run_for_x_generations(self, generations=1000):
         for i in range(generations):
-            if i % 100 == 0:
+            ten_percent_progress = generations//10
+            if i % ten_percent_progress == 0:
                 print(self.generations_run)
             self.main_loop()
 
