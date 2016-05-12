@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 log_location = "logs"
 
 
-def draw_plot(plot_counter, front_list, plot_title):
+def draw_plot(plot_counter, front_list, plot_title, include_member_numbers=False):
     x, y = [], []
     largest_cost = -float("inf")
     largest_cost_data = ()
@@ -45,6 +45,8 @@ def draw_plot(plot_counter, front_list, plot_title):
     plt.scatter(x, y, alpha=0.5)
     plt.xlabel("distance")
     plt.ylabel("cost")
+    if include_member_numbers:
+        plot_title += " (" + str(len(front_list[0])) + ")"
     plt.title(plot_title)
     plt.text(smallest_distance_data[0], smallest_distance_data[1],
              "(" + str(smallest_distance_data[0]) + ", " + str(smallest_distance_data[1]) + ")")
@@ -61,7 +63,7 @@ def draw_both_plots(data):
     counter = 121
     draw_plot(plot_counter=counter, front_list=data, plot_title="All fronts")
     counter += 1
-    draw_plot(plot_counter=counter, front_list=[data[0]], plot_title="Pareto front")
+    draw_plot(plot_counter=counter, front_list=[data[0]], plot_title="Pareto front", include_member_numbers=True)
 
 
 def draw_last_log(file_names):
@@ -70,6 +72,8 @@ def draw_last_log(file_names):
 
 
 def visualize_data_in_file(file):
+    fig = plt.figure()
+    fig.canvas.set_window_title(file)
     with open(os.path.join(log_location, file), 'r') as log_contents:
         log_data = json.load(log_contents)
     draw_both_plots(log_data)
