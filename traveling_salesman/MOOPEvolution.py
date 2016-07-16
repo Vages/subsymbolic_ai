@@ -60,6 +60,7 @@ class EvolutionWorld:
 
         self.parent_population = new_parents
         self.distance = distance
+        self.front_list, _ = self.fast_non_dominated_sort(self.parent_population)
         self.rank = rank
 
         self.offspring_population = self.make_new_offspring(self.parent_population)
